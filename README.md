@@ -1,5 +1,5 @@
-##PARK-A-BOO
-##Crowd-sourcing a smarter way to park
+### PARK-A-BOO
+## Crowd-sourcing a smarter way to park
 
 ## Inspiration
 Crowd-sourcing is being used all wound the world and this mass of collected data can be used to solve simple problems we deal with on a daily basis. 30% of all cars in major cities are looking for parking at any given time. This statistic has many drastic consequences on traffic throughput and congestion. 3.5 to 14 minutes average time spent by a driver searching for an open parking spot.
