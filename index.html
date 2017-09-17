@@ -122,12 +122,57 @@
     </div>
     <div id="message">Location saved</div>
     <script>
+      AWS.config.update({
+          accessKeyId: "AKIAIKZUDPOEOQTL2GZA",
+          secretAccessKey: "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",
+          "region": "us-west-2" 
+      });
+      var dynamodb = new AWS.DynamoDB.DocumentClient();
       var map;
       var marker;
       var infowindow;
       var messagewindow;
       var allMarkers = {};
       var markers = [];
+      function printData(data){
+        console.log(data);
+      }
+
+      function pushData(data, dynamoMarkers, map){
+        console.log(data['Items'].length);
+        console.log(data['Items']);
+        var myLatLng = undefined;
+        var datum = undefined;
+        for (var i = 0; i < data['Items'].length; i++){
+          datum = data['Items'][i];
+          myLatLng = {lat: datum['Lat'], lng: datum['Long']};
+
+
+          var contentString = '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<h4 id="firstHeading" class="firstHeading">' + datum['Type'] +'</h4>'+
+            '<div id="bodyContent">'+
+            '<p>'+ datum['Range'] +'% availability</p>'
+            '</div>'+
+            '</div>';
+
+        var infowindow = new google.maps.InfoWindow({
+          content: contentString
+        });
+
+        var marker = new google.maps.Marker({
+          position: myLatLng,
+          map: map, 
+          title: datum['Range'] + '% ' + datum['Type']
+        });
+        marker.addListener('click', function() {
+          infowindow.open(map, marker);
+        });
+
+        }
+        
+      }
 
       function initMap() {
        
@@ -139,10 +184,6 @@
         });
 
 
-
-
-
-
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
@@ -152,7 +193,26 @@
         map.addListener('bounds_changed', function() {
           searchBox.setBounds(map.getBounds());
         });
+        
+        var dynamoMarkers = [];
+        var hourAgo = (new Date).getTime() - 3600000;
+        var params = {
+          TableName : 'parkaboo',
+          FilterExpression : 'ID > :hourAgo',
+          ExpressionAttributeValues : {':hourAgo' : hourAgo}
+        };
 
+        dynamodb.scan(params, function(err, data) {
+          if (err) console.log(err);
+          else{
+            printData(data);
+            pushData(data, dynamoMarkers, map); 
+          } 
+        });
+        console.log(dynamoMarkers.length);
+        
+        
+        
         var searchMarkers = [];
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
@@ -216,10 +276,8 @@
         });
 
         google.maps.event.addListener(map, 'click', function(event) {
-          console.log(markers.length);
           var lastIndex = 0;
           for (var i = 0; i < markers.length; i++) {
-            console.log(allMarkers[i]['set']);
             if (allMarkers[i]['set'] == false){
                 var markTemp = markers[i];
                 markTemp.setMap(null);
@@ -231,25 +289,17 @@
             position: event.latLng,
             map: map
           });
-          
-          markers.push(marker);
-          allMarkers[lastIndex] = {'set': false};
-          console.log(markers.length);
 
           google.maps.event.addListener(marker, 'click', function() {
             infowindow.open(map, marker);
           });
+
+          markers.push(marker);
+          allMarkers[lastIndex] = {'set': false};
         });
       }
 
-      function saveData() {
-        AWS.config.update({
-            accessKeyId: "",
-            secretAccessKey: "",
-            "region": "us-west-2" 
-        });
-        var dynamodb = new AWS.DynamoDB.DocumentClient();
-        
+      function saveData() {       
         var range = escape(document.getElementById('range').value);
         var type = document.getElementById('type').value;
         var time = (new Date).getTime();
@@ -266,7 +316,8 @@
                   "Type": type, 
                   "Range": range,
                   "Lat": lat,
-                  "Long": long
+                  "Long": long,
+                  "Time": time
               }
           }, function(err, data){
           if (err) {
