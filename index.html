@@ -1,360 +1,216 @@
-<!DOCTYPE html >
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>From Info Windows to a Database: Saving User-Added Form Data</title>
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
-    
-    <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #description {
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+	<title>Parkaboo | The Smarter Way to Park</title>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
 
-      #infowindow-content .title {
-        font-weight: bold;
-      }
+  <!-- CSS  -->
+  <link rel = "icon" href="logos/thumb.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
 
-      #infowindow-content {
-        display: none;
-      }
+<body>
+	
+  <nav class="cyan" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="index.html" class="brand-logo">Parkaboo</a>
+      <ul class="right hide-on-med-and-down">
+		<li><a href="login.html">Sign In</a></li>
+		<li><a href="newuser.html">Register</a></li>
+		<li><a href="about.html">About Parkaboo</a></li>
+		<li><a href="contact.html">Contact Us</a></li>
+		
+	  </ul>
+	  <ul id="nav-mobile" class="side-nav">
+			<li><a href="login.html">Sign In</a></li>
+			<li><a href="newuser.html">Register</a></li>
+			<li><a href="about.html">About Parkaboo</a></li>
+			<li><a href="contact.html">Contact Us</a></li>
+		  </ul>
+		  <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+		</div>
+		</nav>
+	
+	<div class="section no-pad-bot" id="index-banner">
+			<div class="container">
+				<h1 class="header center orange-text">The Smarter Way to Park</h1>
+				<div class="row center">
+						<h5 class="header col s12 light">Find where the nearest unoccupied free parking is.</h5>
+						<br>	<br>
+						<br><br><iframe class="row center" width="950vh" height="400vh" src="http://localhost:8080"></iframe>
+							
+				</div>
+					</div>
+				</div>
 
-      #map #infowindow-content {
-        display: inline;
-      }
+		<br><br>
 
-      .pac-card {
-        margin: 10px 10px 0 0;
-        border-radius: 2px 0 0 2px;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        outline: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        background-color: #fff;
-        font-family: Roboto;
-      }
-
-      #pac-container {
-        padding-bottom: 12px;
-        margin-right: 12px;
-      }
-
-      .pac-controls {
-        display: inline-block;
-        padding: 5px 11px;
-      }
-
-      .pac-controls label {
-        font-family: Roboto;
-        font-size: 13px;
-        font-weight: 300;
-      }
-
-      #pac-input {
-        background-color: #fff;
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-        margin-left: 12px;
-        padding: 0 11px 0 13px;
-        text-overflow: ellipsis;
-        width: 400px;
-      }
-
-      #pac-input:focus {
-        border-color: #4d90fe;
-      }
-
-      #title {
-        color: #fff;
-        background-color: #4d90fe;
-        font-size: 25px;
-        font-weight: 500;
-        padding: 6px 12px;
-      }
-      #target {
-        width: 345px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map" height="460px" width="100%"></div>
-    <input id="pac-input" class="controls" type="text" placeholder="Search Box">
-    <div id="form">
-      <table>
-      <tr><td>Availability:  </td> <td>packed<input id="range" type="range" list="tickmarks"> almost empty
-        <datalist id="tickmarks">
-  <option value="0">
-  <option value="10">
-  <option value="20">
-  <option value="30">
-  <option value="40">
-  <option value="50">
-  <option value="60">
-  <option value="70">
-  <option value="80">
-  <option value="90">
-  <option value="100">
-</datalist>
-
- </td> </tr>
-      <tr><td>
-      <tr><td>Type:</td> <td><select id='type'> +
-                 <option value='Street' SELECTED>Street</option>
-                 <option value='Lot'>Lot</option>
-                 <option value='Garage'>Garage</option>
-                 <option value='Other'>Other</option>
-                 </select> </td></tr>
-                 <tr><td></td><td><input type='button' value='Save' onclick='saveData()'/></td></tr>
-      </table>
-    </div>
-    <div id="message">Location saved</div>
-    <script>
-      AWS.config.update({
+		<div class = "header center orange-text">
+			<h5 class = "inline subheader orange-text col 12">Recently Updated Locations</h5>
+			<div class = "sideright">
+			<input type="image" src="logos/refresh.png" style="width:25px;height:25px" alt="update page">
+		</div>
+		</div>
+		<script>
+			AWS.config.update({
           accessKeyId: "",
           secretAccessKey: "",
           "region": "us-west-2" 
-      });
-      var dynamodb = new AWS.DynamoDB.DocumentClient();
-      var map;
-      var marker;
-      var infowindow;
-      var messagewindow;
-      var allMarkers = {};
-      var markers = [];
-      function printData(data){
-        console.log(data);
-      }
+			});
+			var ul = document.getElementById("table_of_data");
+			function initMap() {
+			var geocoder = new google.maps.Geocoder;
+			var dynamodb = new AWS.DynamoDB.DocumentClient();
+			var hourAgo = (new Date).getTime() - 3600000;
+			var params = {
+				TableName : 'parkaboo',
+				FilterExpression : 'ID > :hourAgo',
+				ExpressionAttributeValues : {':hourAgo' : hourAgo}
+			};
 
-      function pushData(data, dynamoMarkers, map){
-        console.log(data['Items'].length);
-        console.log(data['Items']);
+			dynamodb.scan(params, function(err, data) {
+				if (err) console.log(err);
+				else{
+					pushData(data); 
+				} 
+			});
+			}
+		function sortOnKeys(dict) {
+
+			var sorted = [];
+			for(var key in dict) {
+					sorted[sorted.length] = key;
+			}
+			sorted.sort();
+
+			var tempDict = {};
+			for(var i = 0; i < sorted.length; i++) {
+					tempDict[sorted[i]] = dict[sorted[i]];
+			}
+
+			return tempDict;
+		}
+
+			function pushData(data){
         var myLatLng = undefined;
-        var datum = undefined;
-        for (var i = 0; i < data['Items'].length; i++){
-          datum = data['Items'][i];
-          myLatLng = {lat: datum['Lat'], lng: datum['Long']};
-
-          var sinceTime = new Date(datum['Time']);
+				var datum = undefined;
+				data = data['Items'];
+				console.log(data);
+				var newData = {}
+				for (var i = 0; i < data.length; i++){
+					newData[data[i]['ID']] = data[i];
+				}
+				newData = sortOnKeys(newData);
+				var newNewData = {};
+				for (var i = 0; i < data.length; i++){
+					newNewData[i] = newData[Object.keys(newData)[i]];
+				}
+				console.log("LOLOL");
+				
+				var address = "";
+        for (var i = 0; i < data.length && i < 10; i++){
+          datum = newNewData[i];
+					myLatLng = {lat: datum['Lat'], lng: datum['Long']};
+					address = "";
+					var geocoder = new google.maps.Geocoder;
+					geocoder.geocode({'location': myLatLng}, function(results, status) {
+						if (status === 'OK') {
+							if (results[0]) {
+								address = results[0].formatted_address;
+								console.log(address);
+								var sinceTime = new Date(datum['Time']);
           var hour = sinceTime.getHours();
           var minute = sinceTime.getMinutes();
+          var am = hour > 12 ? "" : " AM";
+          
+          var displayTime = hour + ':' + minute + am;
+					
+					var tr = document.createElement("tr");
+					var timeS = document.createElement("td");
+					timeS.appendChild(document.createTextNode(displayTime));
+					var lotS = document.createElement("td");
+					lotS.appendChild(document.createTextNode(datum['Type']));
+					var availS = document.createElement("td");
+					availS.appendChild(document.createTextNode(datum['Range'] + "%"));
+					var addressS = document.createElement("td");
+					addressS.appendChild(document.createTextNode(address));
+					tr.appendChild(timeS);
+					tr.appendChild(addressS);
+					tr.appendChild(lotS);
+					tr.appendChild(availS);
+					var table_ = document.getElementById("table_of_data");
+					table_.insertBefore(tr, table_.childNodes[0]);
+							}
+							else{
+								console.log("WENT WRONG");
+							}
+						} 
+					});
           
 
-          var content = '<div id="content">'+
-            '<div id="siteNotice">'+
-            '</div>'+
-            '<h4 id="firstHeading" class="firstHeading">' + datum['Type'] +'</h4>'+
-            '<div id="bodyContent">'+
-            '<p>'+ datum['Range'] +'% availability, posted ' + hour + ':' + minute + '</p>'
-            '</div>'+
-            '</div>';
-
-          var marker = new google.maps.Marker({
-            position: myLatLng,
-            map: map, 
-            title: datum['Range'] + '% ' + datum['Type']
-          });
-
-          var infowindow = new google.maps.InfoWindow();  
-          google.maps.event.addListener(marker,'mouseover', (function(marker,content,infowindow){ 
-            return function() {
-                infowindow.setContent(content);
-                infowindow.open(map,marker);
-            };
-          })(marker,content,infowindow));
-          google.maps.event.addListener(marker,'mouseout', (function(marker,content,infowindow){ 
-            return function() {
-                infowindow.close();
-            };
-          })(marker,content,infowindow));
         }
-        
       }
 
-      function initMap() {
-       
-        var california = {lat: 37.4419, lng: -122.1419};
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: california,
-          zoom: 13,
-          mapTypeId: 'roadmap'
-        });
+			
+		</script>
+		<table class="scroll">
+				<thead>
+						<tr>
+								<th>Last Updated</th>
+								<th>Location</th>
+								<th>Type</th>
+								<th>Availability</th>
+						</tr>
+				</thead>
+				<tbody  id="table_of_data">
+						
+				</tbody>
+		</table>
+		
+		<div class="section no-pad-bot" id="index-banner">
+				<div class="container">
+				<div class = "header center orange-text">
+				<br><br>
+				<h5 class = "subheader col 12 light">Sign Up for Parkaboo Today!</h5>
+				<div class = row center> 
+					<br>
+					<a href="newuser.html" id="download-button" class="btn-large waves-effect waves-light orange">Let's Get Started!</a></div>
+			</div>
+			</div>
+			</div>
 
-
-        // Create the search box and link it to the UI element.
-        var input = document.getElementById('pac-input');
-        var searchBox = new google.maps.places.SearchBox(input);
-        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-
-        // Bias the SearchBox results towards current map's viewport.
-        map.addListener('bounds_changed', function() {
-          searchBox.setBounds(map.getBounds());
-        });
-        
-        var dynamoMarkers = [];
-        var hourAgo = (new Date).getTime() - 3600000;
-        var params = {
-          TableName : 'parkaboo',
-          FilterExpression : 'ID > :hourAgo',
-          ExpressionAttributeValues : {':hourAgo' : hourAgo}
-        };
-
-        dynamodb.scan(params, function(err, data) {
-          if (err) console.log(err);
-          else{
-            printData(data);
-            pushData(data, dynamoMarkers, map); 
-          } 
-        });
-        console.log(dynamoMarkers.length);
-        
-        var searchMarkers = [];
-        // Listen for the event fired when the user selects a prediction and retrieve
-        // more details for that place.
-        searchBox.addListener('places_changed', function() {
-          var places = searchBox.getPlaces();
-
-          if (places.length == 0) {
-            return;
-          }
-
-          // Clear out the old markers.
-          searchMarkers.forEach(function(marker) {
-            marker.setMap(null);
-          });
-          searchMarkers = [];
-
-          // For each place, get the icon, name and location.
-          var bounds = new google.maps.LatLngBounds();
-          places.forEach(function(place) {
-            if (!place.geometry) {
-              console.log("Returned place contains no geometry");
-              return;
-            }
-            var icon = {
-              url: place.icon,
-              size: new google.maps.Size(71, 71),
-              origin: new google.maps.Point(0, 0),
-              anchor: new google.maps.Point(17, 34),
-              scaledSize: new google.maps.Size(25, 25)
-            };
-
-            // Create a marker for each place.
-            searchMarkers.push(new google.maps.Marker({
-              map: map,
-              icon: icon,
-              title: place.name,
-              position: place.geometry.location
-            }));
-
-            if (place.geometry.viewport) {
-              // Only geocodes have viewport.
-              bounds.union(place.geometry.viewport);
-            } else {
-              bounds.extend(place.geometry.location);
-            }
-          });
-          map.fitBounds(bounds);
-        });
-
-        infowindow = new google.maps.InfoWindow({
-          content: document.getElementById('form')
-        });
-
-        messagewindow = new google.maps.InfoWindow({
-          content: document.getElementById('message')
-        });
-
-        google.maps.event.addListener(map, 'click', function(event) {
-          var lastIndex = 0;
-          for (var i = 0; i < markers.length; i++) {
-            if (allMarkers[i]['set'] == false){
-                var markTemp = markers[i];
-                markTemp.setMap(null);
-            }
-            lastIndex++;
-            
-          }
-          marker = new google.maps.Marker({
-            position: event.latLng,
-            map: map
-          });
-
-          google.maps.event.addListener(marker, 'click', function() {
-            infowindow.open(map, marker);
-          });
-
-          markers.push(marker);
-          allMarkers[lastIndex] = {'set': false};
-        });
-      }
-
-      function saveData() {       
-        var range = escape(document.getElementById('range').value);
-        var type = document.getElementById('type').value;
-        var time = (new Date).getTime();
-        var lat = marker.getPosition().lat();
-        var long = marker.getPosition().lng();
-        var index = markers.indexOf(marker);
-        allMarkers[index]['type'] = type;
-        allMarkers[index]['set'] = true;
-        dynamodb.put(
-          {
-              "TableName": "parkaboo",
-              "Item": {
-                  "ID": time,
-                  "Type": type, 
-                  "Range": range,
-                  "Lat": lat,
-                  "Long": long,
-                  "Time": time
-              }
-          }, function(err, data){
-          if (err) {
-            console.log(err); // an error occurred
-            } else {
-            console.log(data); // successful response
-            }
-          });
-        
-        infowindow.close();
-        messagewindow.open(map, marker);
-      }
-
-      function downloadUrl(url, callback) {
-        var request = window.ActiveXObject ?
-            new ActiveXObject('Microsoft.XMLHTTP') :
-            new XMLHttpRequest;
-
-        request.onreadystatechange = function() {
-          if (request.readyState == 4) {
-            request.onreadystatechange = doNothing;
-            callback(request.responseText, request.status);
-          }
-        };
-        
-        request.open('GET', url, true);
-        request.send(null);
-      }
-
-      function doNothing () {
-      }
-
+		
+<br>
+	  <footer class="page-footer cyan">
+		<div class="container">
+		  <div class="row">
+			<div class="col 14">
+			  <h5 class="white-text">What is Parkaboo?</h5>
+			  <p class="white-text">Parkaboo uses crowd-sourced data to find the closest unoccupied free parking space, helping you get to where you're going.</p>
+	
+			</div>
+		   </div>
+		  </div>
+		</div>
+		<div class="footer-copyright">
+		  <div class="container">
+		  Parkaboo - The Smarter Way to Park | Inspired by <a class="white-text" href="http://materializecss.com">Materialize</a>
+		  </div>
+		</div>
+	  </footer>
+	
+	
+	  <!--  Scripts-->
+	  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	  <script src="js/materialize.js"></script>
+		<script src="js/init.js"></script>
+		<script src="js/tablescroll.js"></script>
+		<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=&callback=initMap">
     </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtxvOYAPnsYDVkOd9LV43LNKkbKCGR11Q&libraries=places&callback=initMap">
-</script>
-  </body>
-</html>
+	  </body>
+	</html>
+	
