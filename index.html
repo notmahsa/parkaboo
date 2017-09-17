@@ -123,8 +123,8 @@
     <div id="message">Location saved</div>
     <script>
       AWS.config.update({
-          accessKeyId: "AKIAIKZUDPOEOQTL2GZA",
-          secretAccessKey: "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",
+          accessKeyId: "",
+          secretAccessKey: "",
           "region": "us-west-2" 
       });
       var dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -147,29 +147,38 @@
           datum = data['Items'][i];
           myLatLng = {lat: datum['Lat'], lng: datum['Long']};
 
+          var sinceTime = new Date(datum['Time']);
+          var hour = sinceTime.getHours();
+          var minute = sinceTime.getMinutes();
+          
 
-          var contentString = '<div id="content">'+
+          var content = '<div id="content">'+
             '<div id="siteNotice">'+
             '</div>'+
             '<h4 id="firstHeading" class="firstHeading">' + datum['Type'] +'</h4>'+
             '<div id="bodyContent">'+
-            '<p>'+ datum['Range'] +'% availability</p>'
+            '<p>'+ datum['Range'] +'% availability, posted ' + hour + ':' + minute + '</p>'
             '</div>'+
             '</div>';
 
-        var infowindow = new google.maps.InfoWindow({
-          content: contentString
-        });
+          var marker = new google.maps.Marker({
+            position: myLatLng,
+            map: map, 
+            title: datum['Range'] + '% ' + datum['Type']
+          });
 
-        var marker = new google.maps.Marker({
-          position: myLatLng,
-          map: map, 
-          title: datum['Range'] + '% ' + datum['Type']
-        });
-        marker.addListener('click', function() {
-          infowindow.open(map, marker);
-        });
-
+          var infowindow = new google.maps.InfoWindow();  
+          google.maps.event.addListener(marker,'mouseover', (function(marker,content,infowindow){ 
+            return function() {
+                infowindow.setContent(content);
+                infowindow.open(map,marker);
+            };
+          })(marker,content,infowindow));
+          google.maps.event.addListener(marker,'mouseout', (function(marker,content,infowindow){ 
+            return function() {
+                infowindow.close();
+            };
+          })(marker,content,infowindow));
         }
         
       }
@@ -210,8 +219,6 @@
           } 
         });
         console.log(dynamoMarkers.length);
-        
-        
         
         var searchMarkers = [];
         // Listen for the event fired when the user selects a prediction and retrieve
@@ -261,11 +268,6 @@
           });
           map.fitBounds(bounds);
         });
-
-
-
-
-
 
         infowindow = new google.maps.InfoWindow({
           content: document.getElementById('form')
@@ -353,6 +355,6 @@
     </script>
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtxvOYAPnsYDVkOd9LV43LNKkbKCGR11Q&libraries=places&callback=initMap">
-    </script>
+</script>
   </body>
 </html>
