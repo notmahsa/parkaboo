@@ -1,4 +1,4 @@
-### PARK-A-BOO
+# PARK-A-BOO
 ## Crowd-sourcing a smarter way to park
 
 ## Inspiration
